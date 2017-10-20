@@ -1,0 +1,8 @@
+<OGRVRTDataSource> 
+    <OGRVRTLayer name="stops"> 
+        <SrcDataSource>stops.csv</SrcDataSource> 
+        <GeometryType>wkbPoint</GeometryType> 
+        <LayerSRS>EPSG:4326</LayerSRS> 
+        <GeometryField encoding="PointFromColumns" x="stop_lon" y="stop_lat"/>
+    </OGRVRTLayer> 
+</OGRVRTDataSource>

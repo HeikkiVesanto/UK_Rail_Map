@@ -1,0 +1,14 @@
+DROP TABLE  IF EXISTS ukrail_agency;
+DROP TABLE  IF EXISTS ukrail_stops;
+DROP TABLE  IF EXISTS ukrail_routes;
+DROP TABLE  IF EXISTS ukrail_trips;
+DROP TABLE  IF EXISTS ukrail_stop_times;
+DROP TABLE  IF EXISTS ukrail_stopsgeom;
+DROP TABLE  IF EXISTS ukrail_lines;
+DROP TABLE  IF EXISTS ukrail_lines_trips;
+DROP TABLE  IF EXISTS ukrail_lines_exploded;
+DROP TABLE  IF EXISTS ukrail_lines_segments;
+DROP TABLE  IF EXISTS ukrail_lines_final_old;
+DROP TABLE  IF EXISTS ukrail_distinct_agencies;
+DROP TABLE  IF EXISTS ukrail_distinct_agencies_parent;
+DROP TABLE  IF EXISTS ukrail_distinct_parent;

@@ -1,0 +1,594 @@
+<html>
+    <head>
+        <title>UK Rail Map - Agencies</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" href="css/label.css" />
+        <link rel="stylesheet" href="css/groupedlayercontrol.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <script src="js/leaflet.js"></script>
+        <script src="js/label.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/groupedlayercontrol.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <style>
+        .leaflet-control-layers {
+          max-height:365px;
+          overflow: auto;
+          width: 210px ;
+        }
+        </style>
+
+    </head>
+
+        <body style="padding: 0; margin: 0;">
+        <div id="map" style="width: 100%; height: 100%; padding: 0; margin: 0; background: #fff;"></div>
+
+        <script src="static_js/uk_outline.js"></script>
+        <script src="static_js/uk_urban.js"></script>
+        <script src="static_js/uk_towns.js"></script>
+        <script src="dynamic_js/stops.js"></script>
+
+        <script src="agencies_js/AbellioGreaterAnglia.js"></script>
+        <script src="agencies_js/ArrivaTrainsWales.js"></script>
+        <script src="agencies_js/c2c.js"></script>
+        <script src="agencies_js/ChilternRailways.js"></script>
+        <script src="agencies_js/CrossCountry.js"></script>
+        <script src="agencies_js/Crossrail.js"></script>
+        <script src="agencies_js/EastCoast.js"></script>
+        <script src="agencies_js/EastMidlandsTrains.js"></script>
+        <script src="agencies_js/FirstGreatWestern.js"></script>
+        <script src="agencies_js/FirstHullTrains.js"></script>
+        <script src="agencies_js/FirstTransPennineExpress.js"></script>
+        <script src="agencies_js/GatwickExpress.js"></script>
+        <script src="agencies_js/GrandCentral.js"></script>
+        <script src="agencies_js/GreatNorthern.js"></script>
+        <script src="agencies_js/HeathrowConnect.js"></script>
+        <script src="agencies_js/HeathrowExpress.js"></script>
+        <script src="agencies_js/IslandLine.js"></script>
+        <script src="agencies_js/LondonMidland.js"></script>
+        <script src="agencies_js/LondonOverground.js"></script>
+        <script src="agencies_js/LondonUnderground.js"></script>
+        <script src="agencies_js/Merseyrail.js"></script>
+        <script src="agencies_js/NexusTyneWearMetro.js"></script>
+        <script src="agencies_js/NorthernRail.js"></script>
+        <script src="agencies_js/ScotRail.js"></script>
+        <script src="agencies_js/SercoCaledonianSleeper.js"></script>
+        <script src="agencies_js/Southeastern.js"></script>
+        <script src="agencies_js/Southern.js"></script>
+        <script src="agencies_js/SouthWestTrains.js"></script>
+        <script src="agencies_js/Thameslink.js"></script>
+        <script src="agencies_js/VirginTrains.js"></script><script>
+        var map = L.map('map', {zoomControl:false, maxZoom:15, minZoom:5, zoom:6, center:[55,-2.5]})
+        map.setMaxBounds([
+            [48, -13],
+            [63, 10]
+        ]);
+        var hash = new L.Hash(map);
+        var basemap = L.tileLayer('http://a.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+            attribution: ' Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data: &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+        });
+
+        function doStyleukoutline(feature) {
+            return {
+                weight: 0000,
+                color: '#000000',
+                fillColor: '#b1b1b1',
+                dashArray: '',
+                opacity: 1.0,
+                fillOpacity: 1.0
+            };
+        }
+        var json_ukoutlineJSON = new L.geoJson(json_ukoutline, {
+                style: doStyleukoutline,
+                clickable: false
+            });
+        json_ukoutlineJSON.addTo(map);
+        function doStyleukurban(feature) {
+            return {
+                weight: 0,
+                color: '#000000',
+                fillColor: '#848484',
+                dashArray: '',
+                opacity: 1.0,
+                fillOpacity: 1.0
+            };
+        }
+        var json_ukurbanJSON = new L.geoJson(json_ukurban, {
+                style: doStyleukurban,
+                clickable: false
+            });
+        json_ukurbanJSON.addTo(map);
+        var json_uktownsJSON = new L.geoJson(json_uktowns, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+                radius: 4,
+                radius: 4,
+                fillColor: '#ffffff',
+                color: '#ffffff',
+                weight: 1,
+                opacity: 1.0,
+                dashArray: '',
+                fillOpacity: 1.0,
+                labelAnchor: [0, 0]
+            }).bindLabel(feature.properties.name, {noHide: false, offset:[3,-16]})
+            }
+        });
+        var json_stopsJSON = new L.geoJson(json_stops_dynamic, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+                radius: 4,
+                fillColor: '#ff0000',
+                color: '#ffffff',
+                weight: 1,
+                opacity: 1.0,
+                dashArray: '',
+                fillOpacity: 1.0,
+                labelAnchor: [0, 0]
+            }).bindLabel(feature.properties.stop_name, {noHide: false, offset:[3,-16]})
+            }
+        });
+
+        function map_Extent() {
+            latlon = map.getCenter();
+            extent = '#' + map.getZoom() + '/' + Math.round(latlon.lat*10000)/10000 + '/' + Math.round(latlon.lng*10000)/10000;
+            return extent;
+            };
+
+        var info2 = L.control();
+        info2.setPosition('topleft');
+        info2.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info2'); // create a div with a class "info"
+            this.update();
+            return this._div;
+        };
+
+        info2.update = function() {this._div.innerHTML = 'View by: <b><a target="_top" href="agencies.html' + map_Extent() + '">Agency</a></b> || <b><a target="_top"  href="parent.html'  + map_Extent() + '">Parent Company</a></b><br>Created by: <b><a href="http://gisforthought.com/uk-rail-map/">GIS for Thought</a></b> || 2017/10/20<br>Hosting: <a href="https://www.digitalocean.com/?refcode=f67c2dabcf79" target="_blank">Digital Ocean</a> || Logic: <a href="ukrail_distinct_agencies_parent.html" target="_blank">Agency to Parent</a><br><b>This map is no longer automatically updated.<br>ATOL no longer provide a GTFS file that can be used the generate this.</b>';};
+        info2.addTo(map);
+
+        var zoomer = L.control.zoom();
+        zoomer.addTo(map);
+
+        map.on('zoomend', function(e) {
+         info2.update();
+         if ( map.getZoom() < 11 ){ map.removeLayer( json_stopsJSON )}
+         else if ( map.getZoom() >= 11 ){ map.addLayer( json_stopsJSON )}
+        });
+        map.on('moveend', function() {
+            info2.update();
+        });
+
+        var info = L.control();
+        info.setPosition('bottomleft');
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        function get_Colour(e) {
+            e_str = String(e)
+            e_clean = e_str.replace(/[^a-zA-Z0-9]/g, '');
+            string_test = e_clean;
+            if (string_test == 'AbellioGreaterAnglia') {return '#FFB300'};if (string_test == 'ArrivaTrainsWales') {return '#803E75'};if (string_test == 'c2c') {return '#FF6800'};if (string_test == 'ChilternRailways') {return '#A6BDD7'};if (string_test == 'CrossCountry') {return '#C10020'};if (string_test == 'Crossrail') {return '#CEA262'};if (string_test == 'EastCoast') {return '#817066'};if (string_test == 'EastMidlandsTrains') {return '#007D34'};if (string_test == 'FirstGreatWestern') {return '#F6768E'};if (string_test == 'FirstHullTrains') {return '#00538A'};if (string_test == 'FirstTransPennineExpress') {return '#FF7A5C'};if (string_test == 'GatwickExpress') {return '#53377A'};if (string_test == 'GrandCentral') {return '#FF8E00'};if (string_test == 'GreatNorthern') {return '#B32851'};if (string_test == 'HeathrowConnect') {return '#F4C800'};if (string_test == 'HeathrowExpress') {return '#7F180D'};if (string_test == 'IslandLine') {return '#93AA00'};if (string_test == 'LondonMidland') {return '#593315'};if (string_test == 'LondonOverground') {return '#F13A13'};if (string_test == 'LondonUnderground') {return '#232C16'};if (string_test == 'Merseyrail') {return '#00ff00'};if (string_test == 'NexusTyneWearMetro') {return '#0000ff'};if (string_test == 'NorthernRail') {return '#ff0000'};if (string_test == 'ScotRail') {return '#01fffe'};if (string_test == 'SercoCaledonianSleeper') {return '#ffa6fe'};if (string_test == 'Southeastern') {return '#ffdb66'};if (string_test == 'Southern') {return '#006401'};if (string_test == 'SouthWestTrains') {return '#010067'};if (string_test == 'Thameslink') {return '#95003a'};if (string_test == 'VirginTrains') {return '#007db5'};return '#000000'
+        }
+        info.update = function (trains) {this._div.innerHTML = '<b>Line Info:</b><br /> Agency: <b>'	+ (trains ? '<font color='+ (trains ? get_Colour(trains.agency_name) : '') + '>' + trains.agency_name + '</font>' : 'Hover over a line') + '</b><br />Parent Company: <b>' + (trains ? trains.parent_company : '') + '</b>';};
+        info.addTo(map);
+        function highlightFeature(e) {
+            var layer = e.target;
+            info.update(layer.feature.properties);
+        }
+        function resetHighlight(e) {
+            info.update();
+        }
+        map.on('baselayerchange', function (eventLayer) {
+            if (eventLayer.name === 'GB Outline') {
+                json_uktownsJSON.addTo(map);
+                json_ukurbanJSON.addTo(map);
+                json_ukurbanJSON.bringToBack();
+                json_ukoutlineJSON.bringToBack();
+            } else {
+                map.removeLayer(json_ukurbanJSON);
+                map.removeLayer(json_uktownsJSON);
+            }
+        });
+        function moveDown(e) {
+            var layer = e.target;
+            layer.bringToBack();
+            json_ukurbanJSON.bringToBack();
+            json_ukoutlineJSON.bringToBack();
+        }
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: moveDown
+            });
+        }
+        function style_AbellioGreaterAnglia_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#FFB300',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_AbellioGreaterAnglia_agencies_layer  = new L.geoJson(json_AbellioGreaterAnglia_agencies, {
+onEachFeature: onEachFeature,
+style: style_AbellioGreaterAnglia_agencies
+});
+        function style_ArrivaTrainsWales_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#803E75',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_ArrivaTrainsWales_agencies_layer  = new L.geoJson(json_ArrivaTrainsWales_agencies, {
+onEachFeature: onEachFeature,
+style: style_ArrivaTrainsWales_agencies
+});
+        function style_c2c_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#FF6800',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_c2c_agencies_layer  = new L.geoJson(json_c2c_agencies, {
+onEachFeature: onEachFeature,
+style: style_c2c_agencies
+});
+        function style_ChilternRailways_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#A6BDD7',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_ChilternRailways_agencies_layer  = new L.geoJson(json_ChilternRailways_agencies, {
+onEachFeature: onEachFeature,
+style: style_ChilternRailways_agencies
+});
+        function style_CrossCountry_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#C10020',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_CrossCountry_agencies_layer  = new L.geoJson(json_CrossCountry_agencies, {
+onEachFeature: onEachFeature,
+style: style_CrossCountry_agencies
+});
+        function style_Crossrail_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#CEA262',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_Crossrail_agencies_layer  = new L.geoJson(json_Crossrail_agencies, {
+onEachFeature: onEachFeature,
+style: style_Crossrail_agencies
+});
+        function style_EastCoast_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#817066',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_EastCoast_agencies_layer  = new L.geoJson(json_EastCoast_agencies, {
+onEachFeature: onEachFeature,
+style: style_EastCoast_agencies
+});
+        function style_EastMidlandsTrains_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#007D34',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_EastMidlandsTrains_agencies_layer  = new L.geoJson(json_EastMidlandsTrains_agencies, {
+onEachFeature: onEachFeature,
+style: style_EastMidlandsTrains_agencies
+});
+        function style_FirstGreatWestern_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#F6768E',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_FirstGreatWestern_agencies_layer  = new L.geoJson(json_FirstGreatWestern_agencies, {
+onEachFeature: onEachFeature,
+style: style_FirstGreatWestern_agencies
+});
+        function style_FirstHullTrains_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#00538A',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_FirstHullTrains_agencies_layer  = new L.geoJson(json_FirstHullTrains_agencies, {
+onEachFeature: onEachFeature,
+style: style_FirstHullTrains_agencies
+});
+        function style_FirstTransPennineExpress_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#FF7A5C',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_FirstTransPennineExpress_agencies_layer  = new L.geoJson(json_FirstTransPennineExpress_agencies, {
+onEachFeature: onEachFeature,
+style: style_FirstTransPennineExpress_agencies
+});
+        function style_GatwickExpress_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#53377A',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_GatwickExpress_agencies_layer  = new L.geoJson(json_GatwickExpress_agencies, {
+onEachFeature: onEachFeature,
+style: style_GatwickExpress_agencies
+});
+        function style_GrandCentral_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#FF8E00',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_GrandCentral_agencies_layer  = new L.geoJson(json_GrandCentral_agencies, {
+onEachFeature: onEachFeature,
+style: style_GrandCentral_agencies
+});
+        function style_GreatNorthern_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#B32851',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_GreatNorthern_agencies_layer  = new L.geoJson(json_GreatNorthern_agencies, {
+onEachFeature: onEachFeature,
+style: style_GreatNorthern_agencies
+});
+        function style_HeathrowConnect_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#F4C800',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_HeathrowConnect_agencies_layer  = new L.geoJson(json_HeathrowConnect_agencies, {
+onEachFeature: onEachFeature,
+style: style_HeathrowConnect_agencies
+});
+        function style_HeathrowExpress_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#7F180D',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_HeathrowExpress_agencies_layer  = new L.geoJson(json_HeathrowExpress_agencies, {
+onEachFeature: onEachFeature,
+style: style_HeathrowExpress_agencies
+});
+        function style_IslandLine_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#93AA00',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_IslandLine_agencies_layer  = new L.geoJson(json_IslandLine_agencies, {
+onEachFeature: onEachFeature,
+style: style_IslandLine_agencies
+});
+        function style_LondonMidland_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#593315',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_LondonMidland_agencies_layer  = new L.geoJson(json_LondonMidland_agencies, {
+onEachFeature: onEachFeature,
+style: style_LondonMidland_agencies
+});
+        function style_LondonOverground_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#F13A13',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_LondonOverground_agencies_layer  = new L.geoJson(json_LondonOverground_agencies, {
+onEachFeature: onEachFeature,
+style: style_LondonOverground_agencies
+});
+        function style_LondonUnderground_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#232C16',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_LondonUnderground_agencies_layer  = new L.geoJson(json_LondonUnderground_agencies, {
+onEachFeature: onEachFeature,
+style: style_LondonUnderground_agencies
+});
+        function style_Merseyrail_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#00ff00',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_Merseyrail_agencies_layer  = new L.geoJson(json_Merseyrail_agencies, {
+onEachFeature: onEachFeature,
+style: style_Merseyrail_agencies
+});
+        function style_NexusTyneWearMetro_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#0000ff',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_NexusTyneWearMetro_agencies_layer  = new L.geoJson(json_NexusTyneWearMetro_agencies, {
+onEachFeature: onEachFeature,
+style: style_NexusTyneWearMetro_agencies
+});
+        function style_NorthernRail_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#ff0000',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_NorthernRail_agencies_layer  = new L.geoJson(json_NorthernRail_agencies, {
+onEachFeature: onEachFeature,
+style: style_NorthernRail_agencies
+});
+        function style_ScotRail_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#01fffe',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_ScotRail_agencies_layer  = new L.geoJson(json_ScotRail_agencies, {
+onEachFeature: onEachFeature,
+style: style_ScotRail_agencies
+});
+        function style_SercoCaledonianSleeper_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#ffa6fe',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_SercoCaledonianSleeper_agencies_layer  = new L.geoJson(json_SercoCaledonianSleeper_agencies, {
+onEachFeature: onEachFeature,
+style: style_SercoCaledonianSleeper_agencies
+});
+        function style_Southeastern_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#ffdb66',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_Southeastern_agencies_layer  = new L.geoJson(json_Southeastern_agencies, {
+onEachFeature: onEachFeature,
+style: style_Southeastern_agencies
+});
+        function style_Southern_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#006401',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_Southern_agencies_layer  = new L.geoJson(json_Southern_agencies, {
+onEachFeature: onEachFeature,
+style: style_Southern_agencies
+});
+        function style_SouthWestTrains_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#010067',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_SouthWestTrains_agencies_layer  = new L.geoJson(json_SouthWestTrains_agencies, {
+onEachFeature: onEachFeature,
+style: style_SouthWestTrains_agencies
+});
+        function style_Thameslink_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#95003a',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_Thameslink_agencies_layer  = new L.geoJson(json_Thameslink_agencies, {
+onEachFeature: onEachFeature,
+style: style_Thameslink_agencies
+});
+        function style_VirginTrains_agencies(feature) {
+            return {
+                weight: 1.6,
+                color: '#007db5',
+                dashArray: '',
+                opacity: 1.0
+            };
+        }
+        var json_VirginTrains_agencies_layer  = new L.geoJson(json_VirginTrains_agencies, {
+onEachFeature: onEachFeature,
+style: style_VirginTrains_agencies
+});
+json_AbellioGreaterAnglia_agencies_layer.addTo(map);
+var groupedOverlays = {
+        "Agencies": {
+'<font color=#FFB300>&#9632;</font> AbellioGreaterAnglia': json_AbellioGreaterAnglia_agencies_layer,'<font color=#803E75>&#9632;</font> ArrivaTrainsWales': json_ArrivaTrainsWales_agencies_layer,'<font color=#FF6800>&#9632;</font> c2c': json_c2c_agencies_layer,'<font color=#A6BDD7>&#9632;</font> ChilternRailways': json_ChilternRailways_agencies_layer,'<font color=#C10020>&#9632;</font> CrossCountry': json_CrossCountry_agencies_layer,'<font color=#CEA262>&#9632;</font> Crossrail': json_Crossrail_agencies_layer,'<font color=#817066>&#9632;</font> EastCoast': json_EastCoast_agencies_layer,'<font color=#007D34>&#9632;</font> EastMidlandsTrains': json_EastMidlandsTrains_agencies_layer,'<font color=#F6768E>&#9632;</font> FirstGreatWestern': json_FirstGreatWestern_agencies_layer,'<font color=#00538A>&#9632;</font> FirstHullTrains': json_FirstHullTrains_agencies_layer,'<font color=#FF7A5C>&#9632;</font> FirstTransPennineExpress': json_FirstTransPennineExpress_agencies_layer,'<font color=#53377A>&#9632;</font> GatwickExpress': json_GatwickExpress_agencies_layer,'<font color=#FF8E00>&#9632;</font> GrandCentral': json_GrandCentral_agencies_layer,'<font color=#B32851>&#9632;</font> GreatNorthern': json_GreatNorthern_agencies_layer,'<font color=#F4C800>&#9632;</font> HeathrowConnect': json_HeathrowConnect_agencies_layer,'<font color=#7F180D>&#9632;</font> HeathrowExpress': json_HeathrowExpress_agencies_layer,'<font color=#93AA00>&#9632;</font> IslandLine': json_IslandLine_agencies_layer,'<font color=#593315>&#9632;</font> LondonMidland': json_LondonMidland_agencies_layer,'<font color=#F13A13>&#9632;</font> LondonOverground': json_LondonOverground_agencies_layer,'<font color=#232C16>&#9632;</font> LondonUnderground': json_LondonUnderground_agencies_layer,'<font color=#00ff00>&#9632;</font> Merseyrail': json_Merseyrail_agencies_layer,'<font color=#0000ff>&#9632;</font> NexusTyneWearMetro': json_NexusTyneWearMetro_agencies_layer,'<font color=#ff0000>&#9632;</font> NorthernRail': json_NorthernRail_agencies_layer,'<font color=#01fffe>&#9632;</font> ScotRail': json_ScotRail_agencies_layer,'<font color=#ffa6fe>&#9632;</font> SercoCaledonianSleeper': json_SercoCaledonianSleeper_agencies_layer,'<font color=#ffdb66>&#9632;</font> Southeastern': json_Southeastern_agencies_layer,'<font color=#006401>&#9632;</font> Southern': json_Southern_agencies_layer,'<font color=#010067>&#9632;</font> SouthWestTrains': json_SouthWestTrains_agencies_layer,'<font color=#95003a>&#9632;</font> Thameslink': json_Thameslink_agencies_layer,'<font color=#007db5>&#9632;</font> VirginTrains': json_VirginTrains_agencies_layer
+}
+            };
+
+        var baseLayers = {
+          "GB Outline": json_ukoutlineJSON,
+          "Stamen Toner": basemap
+        };
+        json_uktownsJSON.addTo(map);
+        var options = {groupCheckboxes: true, exclusiveGroups: ["Background","Agencies"], collapsed: false};
+        L.control.groupedLayers(baseLayers, groupedOverlays , options).addTo(map);
+
+    </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-41533238-5', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

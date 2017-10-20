@@ -1,0 +1,21 @@
+
+html, body {
+    padding: 0;
+    margin: 0;
+}
+th {
+    text-align: left;
+    vertical-align: top;
+}
+.info {
+    padding: 3px 3px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: rgba(255,255,255,0.8);
+    border-radius: 5px;
+}
+.info2 {
+    padding: 3px 3px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: rgba(255,255,255,0.8);
+    border-radius: 5px;
+}
